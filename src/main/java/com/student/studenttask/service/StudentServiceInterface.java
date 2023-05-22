@@ -12,6 +12,5 @@ public interface StudentServiceInterface {
     public StudentDto registerStudents(StudentDto studentDto);
 
     public void calculateRank();
-    public void updateRank(int rank, int marks);
 }
 

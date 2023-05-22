@@ -59,41 +59,45 @@ public class StudentServiceImpl implements StudentServiceInterface {
         calculateRank();
 
         sDto.setStudentRank(students.getStudentRank());
+        sDto.setId(students.getId());
         return sDto;
     }
 
     @Override
     public void calculateRank() {
-        List<Students> students = repo.findAll();
+        List<Students> students = repo.findAllByMarks();
+        System.out.println(students);
 
-        // case -> list is not empty
         if(!students.isEmpty()){
-            Map<Integer, Integer> mapping = new TreeMap<>();
+            int prevMarks = 0;
+            int prevRank = -1;
+            int i = 0;
 
-
-            List<Integer> totalMarks = students.stream()
-                    .map(Students::getTotalMarks)
-                    .sorted(Comparator.reverseOrder())
-                    .collect(Collectors.toList());
-
-            for(int i = 0; i < totalMarks.size(); i++){
-                
+            for(Students s : students){
+                if(i == 0){ // initial case
+                    s.setStudentRank(1);
+                    i++;
+                } else{
+                    if(prevMarks == s.getTotalMarks()){ // check prev marks == current marks
+                        // for the first matching pair
+                        if(prevRank != -1){
+                            s.setStudentRank(prevRank);
+                        } else{
+                            prevRank = i;
+                            s.setStudentRank(i);
+                        }
+                    } else{
+                        i++;
+                        prevRank = i;
+                        s.setStudentRank(i);
+                    }
+                }
+                prevMarks = s.getTotalMarks();
+                repo.save(s);
             }
-
-
-
         }
+
 
     }
 
-    @Override
-    public void updateRank(int rank, int marks) {
-        List<Students> students = repo.findByTotalMarks(marks);
-
-        for(int i = 0; i < students.size(); i++){
-            students.get(i).setStudentRank(rank-1);
-            repo.save(students.get(i));
-        }
-
-    }
 }
